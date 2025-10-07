@@ -1,73 +1,51 @@
-# React + TypeScript + Vite
+# 🤖 Chat Conversacional - Análisis de Comentarios
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web desarrollada con **React + Vite**, que implementa un **chat conversacional** conectado a flujos de automatización creados en **N8n**.  
+El sistema permite analizar comentarios de hoteles y generar un resumen con tendencias y métricas, simulando un asistente inteligente.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🧱 Arquitectura General
 
-## React Compiler
+La aplicación está compuesta por tres partes principales:
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+1. **Frontend (React + Vite)**  
+   Interfaz conversacional desarrollada en React, con comunicación directa al webhook de N8n.
 
-## Expanding the ESLint configuration
+2. **Automatización (N8n)**  
+   Los flujos de N8n procesan los mensajes del usuario, analizan comentarios y devuelven las respuestas estructuradas al frontend.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+3. **Almacenamiento (Google Sheets)**  
+   Registro de las conversaciones y resultados generados, con uso de nodos nativos de N8n.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+En la carpeta `n8n-export/` se incluyen los **tres flujos principales de N8n** utilizados en este proyecto:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `Agente_Conversacional.json` → flujo principal de conversación
+- `API_Comentarios_Simulados.json` → generación de comentarios simulados
+- `Analizar_Comentarios.json` → análisis y cálculo de métricas
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ⚙️ Requisitos Previos
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Antes de comenzar, asegurate de tener instalado:
+
+- [Node.js](https://nodejs.org/) (v18 o superior)
+- [npm](https://www.npmjs.com/) o [yarn](https://yarnpkg.com/)
+- Navegador moderno (Chrome, Edge, Firefox)
+
+---
+
+## 🚀 Instalación y Ejecución
+
+1. **Clonar el repositorio**
+   git clone https://github.com/usuario/chatbot-conversacional.git
+   cd chatbot-conversacional
+2. **Instalar dependecias**
+   npm install
+3. **Levantar el entorno de desarrollo**
+   npm run dev
+4. **Abrir la aplicacion en el navegador**
+   Accede a la URL que muestra la consola (por defecto: http://localhost:5173).
