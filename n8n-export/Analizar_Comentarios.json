@@ -1,0 +1,84 @@
+{
+  "name": "Analizar_Comentarios",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "analizar-comentarios",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3352707a-04b8-4ce3-8178-1fe510257f3e",
+      "name": "Webhook",
+      "webhookId": "ba2ccb2d-0c31-439c-92a2-429d57ad8f0b"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recibir comentarios del body\nconst input = $input.first().json;\nconst body = input.body || input;\nconst comentarios = body.comentarios || [];\n\nif (!comentarios || comentarios.length === 0) {\n  return [{\n    json: {\n      error: true,\n      mensaje: \"No se recibieron comentarios para analizar\"\n    }\n  }];\n}\n\n// ============================================\n// 1. CALCULAR MÉTRICAS BÁSICAS\n// ============================================\nconst total = comentarios.length;\nconst positivos = comentarios.filter(c => c.sentimiento === 'positivo').length;\nconst negativos = comentarios.filter(c => c.sentimiento === 'negativo').length;\nconst neutros = comentarios.filter(c => c.sentimiento === 'neutro').length;\n\nconst pctPositivos = Math.round((positivos / total) * 100);\nconst pctNegativos = Math.round((negativos / total) * 100);\nconst pctNeutros = Math.round((neutros / total) * 100);\n\n// Puntuación promedio\nconst sumaCalificaciones = comentarios.reduce((sum, c) => sum + (c.puntuacion || 0), 0);\nconst promedioCalificacion = (sumaCalificaciones / total).toFixed(1);\n\n// ============================================\n// 2. IDENTIFICAR PROBLEMAS RECURRENTES\n// ============================================\nconst comentariosNegativos = comentarios.filter(c => c.sentimiento === 'negativo');\n\n// Diccionario de palabras clave por categoría\nconst palabrasClavePorCategoria = {\n  limpieza: [\n    'sucio', 'sucia', 'sucios', 'sucias',\n    'polvo', 'mancha', 'manchas', 'pelo', 'pelos',\n    'suciedad', 'mugre', 'descuidado', 'olor', 'mal olor'\n  ],\n  comida: [\n    'fría', 'frio', 'repetitiva', 'repetitivo',\n    'aburrida', 'mala', 'mal sabor', 'desabrido',\n    'poca variedad', 'sin variedad', 'calidad baja', 'recalentada'\n  ],\n  personal: [\n    'mala actitud', 'mala atención', 'lento', 'lenta',\n    'desinteresado', 'desinteresada',\n    'grosero', 'grosera',\n    'antipático', 'antipática',\n    'desagradable', 'descortés'\n  ],\n  recepcion: [\n    'check-in', 'check out', 'recepción',\n    'espera', 'fila', 'demora',\n    'lento', 'lenta', 'organizado', 'desorganizado', 'caos'\n  ],\n  ruido: [\n    'ruido', 'ruidoso', 'bulla', 'escándalo',\n    'molesto', 'imposible dormir'\n  ],\n  instalaciones: [\n    'viejo', 'vieja', 'roto', 'rota',\n    'anticuado', 'anticuada',\n    'mal estado', 'renovación urgente',\n    'desgastado', 'desgastada',\n    'obsoleto', 'obsoleta'\n  ],\n  precio: [\n    'caro', 'cara', 'caros', 'caras',\n    'precio alto', 'sobrevalorado',\n    'vale la pena (negativo si con “no” delante)', \n    'relación calidad-precio mala'\n  ]\n};\n\n// Contar frecuencia de problemas por categoría\nconst problemasPorCategoria = {};\nconst problemasTexto = [];\n\nfor (let comentario of comentariosNegativos) {\n  const textoLower = comentario.texto.toLowerCase();\n  let categoriaEncontrada = false;\n  \n  for (let [categoria, palabras] of Object.entries(palabrasClavePorCategoria)) {\n    for (let palabra of palabras) {\n      if (textoLower.includes(palabra)) {\n        problemasPorCategoria[categoria] = (problemasPorCategoria[categoria] || 0) + 1;\n        if (!categoriaEncontrada) {\n          problemasTexto.push(comentario.texto);\n          categoriaEncontrada = true;\n        }\n        break;\n      }\n    }\n    if (categoriaEncontrada) break;\n  }\n}\n\n// Ordenar problemas por frecuencia\nconst problemasOrdenados = Object.entries(problemasPorCategoria)\n  .sort((a, b) => b[1] - a[1])\n  .map(([categoria, freq]) => {\n   const etiquetas = {\n  limpieza: 'Limpieza de habitaciones',\n  comida: 'Comida repetitiva',\n  personal: 'Actitud del personal',\n  recepcion: 'Recepción / check-in',\n  ruido: 'Ruido en habitaciones',\n  instalaciones: 'Instalaciones antiguas',\n  precio: 'Relación calidad-precio'\n};\n    return etiquetas[categoria] || categoria;\n  });\n\n// ============================================\n// 3. IDENTIFICAR FORTALEZAS\n// ============================================\nconst comentariosPositivos = comentarios.filter(c => c.sentimiento === 'positivo');\n\nconst palabrasFortalezas = {\n  limpieza: [\n    'limpio', 'limpia', 'limpios', 'limpias',\n    'impecable', 'reluciente', 'ordenado', 'ordenada',\n    'brillante', 'desinfectado', 'desinfectada', 'higiénico'\n  ],\n  comida: [\n    'delicioso', 'deliciosa', 'sabroso', 'sabrosa',\n    'excelente sabor', 'muy rico', 'variedad',\n    'fresco', 'fresca', 'exquisito', 'exquisita'\n  ],\n  personal: [\n    'amable', 'servicial', 'atento', 'atenta',\n    'profesional', 'educado', 'educada',\n    'cordial', 'respetuoso', 'respetuosa',\n    'siempre dispuesto', 'trato excelente'\n  ],\n  ubicacion: [\n    'ubicación excelente', 'bien ubicado', 'cerca de todo',\n    'zona segura', 'céntrico', 'buena zona', 'estratégico'\n  ],\n  instalaciones: [\n    'moderno', 'moderna', 'renovado', 'renovada',\n    'cómodo', 'cómoda', 'espacioso', 'espaciosa',\n    'bonito', 'bonita', 'agradable',\n    'piscina', 'spa', 'gimnasio'\n  ],\n  precio: [\n    'barato', 'barata', 'económico', 'económica',\n    'accesible', 'buena relación calidad-precio',\n    'vale la pena', 'justo'\n  ]\n};\n\nconst fortalezasPorCategoria = {};\nfor (let comentario of comentariosPositivos) {\n  const textoLower = comentario.texto.toLowerCase();\n  \n  for (let [categoria, palabras] of Object.entries(palabrasFortalezas)) {\n    for (let palabra of palabras) {\n      if (textoLower.includes(palabra)) {\n        fortalezasPorCategoria[categoria] = (fortalezasPorCategoria[categoria] || 0) + 1;\n        break;\n      }\n    }\n  }\n}\n\nconst fortalezasOrdenadas = Object.entries(fortalezasPorCategoria)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 3)\n  .map(([categoria]) => {\n    const etiquetas = {\n      ubicacion: 'Ubicación excelente',\n      personal: 'Personal amable',\n      limpieza: 'Limpieza impecable',\n      comida: 'Comida de calidad',\n      instalaciones: 'Instalaciones modernas'\n    };\n    return etiquetas[categoria] || categoria;\n  });\n\n// Si no hay fortalezas identificadas, tomar los 2 mejores comentarios\nif (fortalezasOrdenadas.length === 0 && comentariosPositivos.length > 0) {\n  fortalezasOrdenadas.push(...comentariosPositivos.slice(0, 2).map(c => c.texto.substring(0, 50) + '...'));\n}\n\n// ============================================\n// 4. GENERAR RECOMENDACIONES\n// ============================================\nconst recomendaciones = [];\n\n// Recomendaciones basadas en problemas identificados\nif (problemasPorCategoria.limpieza) {\n  recomendaciones.push('Reforzar protocolos de limpieza y supervisión de habitaciones');\n}\nif (problemasPorCategoria.comida) {\n  recomendaciones.push('Revisar y renovar menús del buffet, aumentar variedad');\n}\nif (problemasPorCategoria.personal) {\n  recomendaciones.push('Capacitación en atención al cliente y servicio para el personal');\n}\nif (problemasPorCategoria.instalaciones) {\n  recomendaciones.push('Considerar plan de renovación de instalaciones y equipamiento');\n}\nif (problemasPorCategoria.precio) {\n  recomendaciones.push('Revisar estrategia de precios o mejorar servicios incluidos');\n}\n\n// Si hay muchos comentarios negativos\nif (pctNegativos > 40) {\n  recomendaciones.push('Implementar sistema de seguimiento de quejas y mejora continua');\n}\n\n// Si no hay problemas significativos\nif (recomendaciones.length === 0) {\n  recomendaciones.push('Mantener los estándares actuales de calidad y servicio');\n  recomendaciones.push('Seguir monitoreando feedback para detectar tendencias');\n}\n\n// ============================================\n// 5. DETECCIÓN DE PATRONES TEMPORALES\n// ============================================\n// Agrupar comentarios por mes\nconst comentariosPorMes = {};\nfor (let comentario of comentarios) {\n  const fecha = new Date(comentario.fecha);\n  const mesAnio = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;\n  \n  if (!comentariosPorMes[mesAnio]) {\n    comentariosPorMes[mesAnio] = { positivos: 0, negativos: 0, neutros: 0, total: 0 };\n  }\n  \n  comentariosPorMes[mesAnio][comentario.sentimiento + 's']++;\n  comentariosPorMes[mesAnio].total++;\n}\n\n// Calcular tendencia segun evolucion de comentarios positivos\n\nlet tendencia = \"Datos insuficientes para análisis temporal\";\n\nconst mesesOrdenados = Object.keys(comentariosPorMes).sort();\n\nif(mesesOrdenados.length >= 2){\n  const positivosPorMes = mesesOrdenados.map(mes => comentariosPorMes[mes].positivos);\n  const primero = positivosPorMes[0];\n  const ultimo = positivosPorMes[positivosPorMes.length - 1];\n\n  if (ultimo > primero) {\n    tendencia = \"Mejora en satisfacción\";\n  } else if (ultimo < primero) {\n    tendencia = \"Empeoramiento en satisfacción\";\n  } else {\n    let cambio = false;\n    for (let i = 1; i < positivosPorMes.length; i++) {\n      if (positivosPorMes[i] !== positivosPorMes[i - 1]) {\n        cambio = true;\n        break;\n      }\n    }\n    tendencia = cambio ? \"Variación en satisfacción\" : \"Estable\";\n  }\n}\n\n// ============================================\n// 6. ESTRUCTURA DE RESPUESTA\n// ============================================\nreturn [{\n  json: {\n    resumen: {\n      total_comentarios: total,\n      positivos: pctPositivos,\n      neutros: pctNeutros,\n      negativos: pctNegativos,\n      calificacion_promedio: parseFloat(promedioCalificacion)\n    },\n    problemas_identificados: problemasOrdenados.slice(0, 3),\n    fortalezas: fortalezasOrdenadas,\n    recomendaciones: recomendaciones,\n    patrones_temporales: {\n      tendencia: tendencia,\n      comentarios_por_periodo: comentariosPorMes\n    },\n    comentarios_destacados: {\n      mejor: comentariosPositivos[0]?.texto || 'N/A',\n      peor: comentariosNegativos[0]?.texto || 'N/A'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "69ebd30a-a0b2-4d69-999a-50e18e3f0662",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "2823b1cd-bfa4-4845-9ed7-5e0f2113657e",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "61e67037-2dd8-4b5c-bf0b-0219e8e25c2b",
+  "meta": {
+    "instanceId": "d85de982fe145b8171e0ba6f319b08d898e3252acaad39b8ffd39c79bc980a1c"
+  },
+  "id": "Q9jaXms1YAupRuSv",
+  "tags": []
+}

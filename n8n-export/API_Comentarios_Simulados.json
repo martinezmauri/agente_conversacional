@@ -1,0 +1,84 @@
+{
+  "name": "API_Comentarios_Simulados",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generar-comentarios",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "59c2a29b-344a-40ab-a2e5-30830a65862f",
+      "name": "Webhook",
+      "webhookId": "195a306d-ec39-4906-a175-a8d11fb2ed28"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recibir parámetros del body\nconst input = $input.first().json;\nconst body = input.body || input;\n\nconst tipo = body.tipo || 'hotel';\nconst nombre = body.nombre || 'Establecimiento';\nconst periodo = body.periodo || 'ultimo_mes';\nconst aspecto = body.aspecto || 'general';\n\n// Banco de comentarios por aspecto\nconst bancoComentarios = {\n  limpieza: {\n    positivos: [\n      \"Las habitaciones estaban impecables, limpieza de 10\",\n      \"Personal de limpieza muy atento y profesional\",\n      \"Todo reluciente, se nota la dedicación del equipo\",\n      \"Limpieza excepcional en todas las áreas comunes\",\n      \"Habitación impecable desde el primer día\",\n      \"Toallas y sábanas siempre limpias y frescas\",\n      \"Baños relucientes, sin ninguna queja\",\n      \"Se nota el esfuerzo en mantener todo limpio\",\n      \"Limpieza diaria perfecta, muy agradecidos\",\n      \"Hasta los rincones estaban limpios\"\n    ],\n    negativos: [\n      \"La habitación no estaba bien limpia al llegar\",\n      \"Encontramos polvo en varios lugares\",\n      \"La limpieza dejaba mucho que desear\",\n      \"Manchas en las sábanas, inaceptable\",\n      \"Baño con restos de suciedad\",\n      \"No limpiaban la habitación todos los días\",\n      \"Pelos en el baño, muy desagradable\",\n      \"Alfombras con aspecto sucio\",\n      \"Polvo acumulado en muebles\",\n      \"Toallas manchadas, pedimos cambio\"\n    ]\n  },\n  \n  comida: {\n    positivos: [\n      \"Buffet excelente con gran variedad de opciones\",\n      \"Comida deliciosa, especialmente los platos locales\",\n      \"Restaurantes de alta calidad, muy recomendables\",\n      \"Desayuno espectacular, de todo y muy rico\",\n      \"Platos frescos y bien preparados\",\n      \"Gran variedad de opciones vegetarianas\",\n      \"La comida superó nuestras expectativas\",\n      \"Postres increíbles, lo mejor del buffet\",\n      \"Calidad de restaurante gourmet\",\n      \"Cada comida era una experiencia\"\n    ],\n    negativos: [\n      \"Comida repetitiva y poco variada\",\n      \"Calidad de la comida por debajo del precio\",\n      \"Buffet limitado y aburrido\",\n      \"La comida estaba fría en varias ocasiones\",\n      \"Poca variedad, nos cansamos rápido\",\n      \"Platos sin sabor, muy básicos\",\n      \"Colas largas y comida se acababa\",\n      \"Opciones vegetarianas muy limitadas\",\n      \"Relación calidad-precio mala en restaurantes\",\n      \"Comida no fresca, parecía recalentada\"\n    ]\n  },\n  \n  personal: {\n    positivos: [\n      \"Personal muy amable y servicial en todo momento\",\n      \"Atención excepcional, siempre con una sonrisa\",\n      \"Staff muy profesional y atento\",\n      \"Nos ayudaron con todas nuestras consultas\",\n      \"Recepción eficiente y cordial\",\n      \"Camareros atentos y simpáticos\",\n      \"Personal multilingüe, muy útil\",\n      \"Hicieron que nuestra estancia fuera especial\",\n      \"Equipo muy bien entrenado\",\n      \"Servicio de 5 estrellas, sin duda\"\n    ],\n    negativos: [\n      \"Personal poco amable y desinteresado\",\n      \"Servicio lento en recepción\",\n      \"Camareros con mala actitud\",\n      \"No resolvieron nuestros problemas\",\n      \"Personal poco capacitado\",\n      \"Recepción desorganizada y caótica\",\n      \"Falta de atención al cliente\",\n      \"Tardaban mucho en responder llamadas\",\n      \"Personal con poca disposición a ayudar\",\n      \"Servicio por debajo de lo esperado\"\n    ]\n  },\n  \n  instalaciones: {\n    positivos: [\n      \"Instalaciones modernas y bien mantenidas\",\n      \"Piscina espectacular, la mejor de la zona\",\n      \"Gimnasio muy completo y equipado\",\n      \"Spa de lujo, experiencia relajante\",\n      \"Habitaciones amplias y confortables\",\n      \"Zonas comunes hermosas y cuidadas\",\n      \"Excelente wifi en todas las áreas\",\n      \"Aire acondicionado funcionando perfectamente\",\n      \"Camas muy cómodas, descansamos genial\",\n      \"Todo en perfecto estado de conservación\"\n    ],\n    negativos: [\n      \"Instalaciones anticuadas, necesitan renovación\",\n      \"Piscina pequeña y siempre llena\",\n      \"Gimnasio con equipos viejos\",\n      \"Habitación con humedad y mal olor\",\n      \"Aire acondicionado no funcionaba bien\",\n      \"Wifi muy lento e intermitente\",\n      \"Ascensores lentos y viejos\",\n      \"Muebles desgastados y rotos\",\n      \"Baño necesita urgente renovación\",\n      \"Colchones incómodos, no descansamos\"\n    ]\n  },\n  \n  general: {\n    positivos: [\n      \"Experiencia fantástica, volveremos sin duda\",\n      \"Excelente relación calidad-precio\",\n      \"Superó nuestras expectativas en todo\",\n      \"Perfecto para familias con niños\",\n      \"Ubicación ideal, cerca de todo\",\n      \"Estancia inolvidable, muy recomendable\",\n      \"Todo estuvo perfecto, muy satisfechos\",\n      \"Lugar maravilloso, lo recomiendo totalmente\",\n      \"Mejor de lo esperado en todos los aspectos\",\n      \"Volveríamos sin pensarlo dos veces\"\n    ],\n    neutros: [\n      \"Buena experiencia en general\",\n      \"Correcto para el precio pagado\",\n      \"Experiencia aceptable, nada excepcional\",\n      \"Cumple lo básico sin más\",\n      \"Bien ubicado pero con detalles mejorables\",\n      \"Estancia correcta, sin sorpresas\",\n      \"Normal, ni bueno ni malo\",\n      \"Adecuado para una estancia corta\",\n      \"Precio justo por lo que ofrece\",\n      \"Experiencia estándar de la zona\"\n    ],\n    negativos: [\n      \"No cumplió nuestras expectativas\",\n      \"Decepcionante para el precio pagado\",\n      \"No volvería, hay mejores opciones\",\n      \"Experiencia por debajo de lo esperado\",\n      \"Muchas deficiencias en general\",\n      \"No lo recomendaría a amigos\",\n      \"Mala relación calidad-precio\",\n      \"Instalaciones y servicio deficientes\",\n      \"No vale lo que cuesta\",\n      \"Experiencia muy decepcionante\"\n    ]\n  }\n};\n\n// Función para generar fecha aleatoria según período\nfunction generarFecha(periodo) {\n  const hoy = new Date();\n  let diasAtras;\n  \n  switch(periodo) {\n    case 'ultimo_mes':\n      diasAtras = Math.floor(Math.random() * 30);\n      break;\n    case 'tres_meses':\n      diasAtras = Math.floor(Math.random() * 90);\n      break;\n    case 'un_año':\n      diasAtras = Math.floor(Math.random() * 365);\n      break;\n    case 'temporada_alta':\n      diasAtras = Math.floor(Math.random() * 60) + 60;\n      break;\n    default:\n      diasAtras = Math.floor(Math.random() * 30);\n  }\n  \n  const fecha = new Date(hoy);\n  fecha.setDate(fecha.getDate() - diasAtras);\n  return fecha.toISOString().split('T')[0];\n}\n\n// Generar 3-5 comentarios\nconst numComentarios = Math.floor(Math.random() * 3) + 3;\nconst comentarios = [];\n\nfor (let i = 0; i < numComentarios; i++) {\n  let texto, sentimiento, puntuacion;\n  \n  if (aspecto === 'general') {\n    // Distribución: 60% positivo, 25% neutro, 15% negativo\n    const rand = Math.random();\n    \n    if (rand < 0.6) {\n      // Positivo\n      texto = bancoComentarios.general.positivos[Math.floor(Math.random() * bancoComentarios.general.positivos.length)];\n      sentimiento = 'positivo';\n      puntuacion = 4 + Math.floor(Math.random() * 2);\n    } else if (rand < 0.85) {\n      // Neutro\n      texto = bancoComentarios.general.neutros[Math.floor(Math.random() * bancoComentarios.general.neutros.length)];\n      sentimiento = 'neutro';\n      puntuacion = 3;\n    } else {\n      // Negativo\n      texto = bancoComentarios.general.negativos[Math.floor(Math.random() * bancoComentarios.general.negativos.length)];\n      sentimiento = 'negativo';\n      puntuacion = 1 + Math.floor(Math.random() * 2);\n    }\n  } else {\n    // Para aspectos específicos\n    const aspectoData = bancoComentarios[aspecto];\n    const esPositivo = Math.random() > 0.3;\n    \n    if (esPositivo) {\n      texto = aspectoData.positivos[Math.floor(Math.random() * aspectoData.positivos.length)];\n      sentimiento = 'positivo';\n      puntuacion = 4 + Math.floor(Math.random() * 2);\n    } else {\n      texto = aspectoData.negativos[Math.floor(Math.random() * aspectoData.negativos.length)];\n      sentimiento = 'negativo';\n      puntuacion = 1 + Math.floor(Math.random() * 2);\n    }\n  }\n  \n  comentarios.push({\n    id: `comment_${Date.now()}_${i}`,\n    texto: texto,\n    sentimiento: sentimiento,\n    fecha: generarFecha(periodo),\n    puntuacion: puntuacion,\n    aspecto_principal: aspecto,\n    fuente: \"TripAdvisor\"\n  });\n}\n\nreturn [{\n  json: {\n    tipo: tipo,\n    nombre: nombre,\n    periodo: periodo,\n    aspecto: aspecto,\n    total_comentarios: comentarios.length,\n    comentarios: comentarios\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "1f0cf2da-f8ed-481b-9751-83e2612611da",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "8e91b9f5-e14b-4ea6-abe9-7e26b9d5dd2f",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6efbb033-dcd3-4eb6-ac0d-a128e24ecc7c",
+  "meta": {
+    "instanceId": "d85de982fe145b8171e0ba6f319b08d898e3252acaad39b8ffd39c79bc980a1c"
+  },
+  "id": "ULc48VM2iYlMDPXx",
+  "tags": []
+}
