@@ -69,6 +69,7 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [pasoActual, setPasoActual] = useState<string>("TIPO");
   const [analisis, setAnalisis] = useState<Analisis | null>(null);
+  const [mostrarAnalisis, setMostrarAnalisis] = useState(true);
 
   const chatRef = useRef<HTMLDivElement | null>(null);
   const API_URL =
@@ -82,6 +83,18 @@ function App() {
 
   const sendMessage = async (userMessage: string): Promise<void> => {
     if (!userMessage.trim()) return;
+
+    // 👉 Si el usuario elige una opción de profundización, ocultamos las cards
+    if (pasoActual === "PROFUNDIZAR") {
+      const opcionesQueOcultan = [
+        "Ver informe completo",
+        "Análisis profundo por aspecto",
+        "Comparar con competidores",
+      ];
+      if (opcionesQueOcultan.includes(userMessage)) {
+        setMostrarAnalisis(false);
+      }
+    }
 
     setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
     setInput("");
@@ -99,6 +112,8 @@ function App() {
       });
 
       const data: ApiResponse = await res.json();
+      console.log("API response:", data);
+
       if (data?.success) {
         setPasoActual(data.pasoActual);
 
@@ -107,15 +122,12 @@ function App() {
           localStorage.setItem("sessionId", data.sessionId);
         }
 
-        // 👉 Si el paso finaliza, no mostramos el texto formateado, solo las cards
-        if (data.pasoActual === "FIN") {
+        if (data.analisis) {
           setAnalisis(data.analisis || null);
+          setMostrarAnalisis(true); // 👈 volvemos a mostrar si hay nuevo análisis
           setMessages((prev) => [
             ...prev,
-            {
-              sender: "bot",
-              text: "✅ Análisis completado. Mira los resultados abajo. ¿Quieres iniciar un nuevo análisis?",
-            },
+            { sender: "bot", text: data.message || "✅ Análisis completado." },
           ]);
         } else {
           setMessages((prev) => [
@@ -143,7 +155,7 @@ function App() {
     switch (pasoActual) {
       case "TIPO":
         return [
-          { label: "🏨 Mi hotel específico", value: "Hotel" },
+          { label: "🏨 Hotel específico", value: "Hotel" },
           { label: "🏝️ Destino turístico", value: "Destino" },
           { label: "⚔️ Vs. competencia", value: "Competencia" },
         ];
@@ -161,6 +173,31 @@ function App() {
           { label: "👨‍💼 Personal", value: "Personal" },
           { label: "🏗️ Instalaciones", value: "Instalaciones" },
           { label: "⭐ General", value: "General" },
+        ];
+      case "PROFUNDIZAR":
+        return [
+          { label: "📊 Ver informe completo", value: "Ver informe completo" },
+          {
+            label: "🔍 Análisis profundo por aspecto",
+            value: "Análisis profundo por aspecto",
+          },
+          {
+            label: "⚔️ Comparar con competidores",
+            value: "Comparar con competidores",
+          },
+          { label: "📧 Enviar por email", value: "Enviar por email" },
+          { label: "🔄 Iniciar de nuevo", value: "Iniciar de nuevo" },
+        ];
+      case "ANALISIS_PROFUNDO":
+        return [
+          { label: "🧹 Limpieza", value: "Limpieza" },
+          { label: "🍽️ Comida", value: "Comida" },
+          { label: "👨‍💼 Personal", value: "Personal" },
+          { label: "🏗️ Instalaciones", value: "Instalaciones" },
+          {
+            label: "🔄 Volver al menu anterior",
+            value: "Volver al menu anterior",
+          },
         ];
       default:
         return [];
@@ -206,7 +243,7 @@ function App() {
         </div>
 
         {/* 👉 Mostrar cards sólo si hay análisis */}
-        {pasoActual === "FIN" && analisis && (
+        {analisis && mostrarAnalisis && (
           <div className="p-5 space-y-4">
             <ResumenCard resumen={analisis.resumen} />
             <TendenciaCard analisis={analisis} />
